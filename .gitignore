@@ -1,0 +1,37 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# Spring Boot
+target/
+*.iml
+.idea/
+.mvn/
+!mvnw
+!mvnw.cmd
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IntelliJ
+*.iws
+*.ipr
+*.iml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# Environment
+.env
+*.env

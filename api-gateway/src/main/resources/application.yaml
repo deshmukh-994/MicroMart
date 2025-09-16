@@ -1,0 +1,87 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+
+  main:
+    allow-bean-definition-overriding: true
+
+  logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+
+
+  cloud:
+    gateway:
+      discovery:
+        globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      default-filters:
+        - RemoveRequestHeader=Cookie
+      routes:
+        - id: userservice
+          uri: http://localhost:8083
+          predicates:
+            - Path=/userservice/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=Authorization, "#{request.headers.Authorization}"
+
+        - id: product-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/product-service/api/products/**
+          filters:
+            - StripPrefix=1
+
+        - id: product-swagger
+          uri: http://localhost:8081
+          predicates:
+            - Path=/product-service/v3/api-docs
+          filters:
+            - RewritePath=/product-service/(?<segment>.*), /${segment}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret: mysupersecuresecretkey1234567890abcd
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: userservice
+        url: /userservice/v3/api-docs
+      - name: product-service
+        url: /product-service/v3/api-docs

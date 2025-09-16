@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  userdb:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_USERDB}
+    ports:
+      - "${USER_DB_PORT}:3306"
+
+  productdb:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_PRODUCTDB}
+    ports:
+      - "${PRODUCT_DB_PORT}:3306"
+
+  eureka-server:
+    build: ./eureka-server
+    ports:
+      - "${EUREKA_PORT}:${EUREKA_PORT}"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}
+
+  userservice:
+    build: ./userservice
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    depends_on:
+      - userdb
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://userdb:3306/${MYSQL_USERDB}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_URL}
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
+    depends_on:
+      - productdb
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://productdb:3306/${MYSQL_PRODUCTDB}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_URL}
